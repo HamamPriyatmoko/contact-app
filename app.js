@@ -19,9 +19,8 @@
 
 // main();
 
-
 const yargs = require('yargs');
-const { simpanData } = require('./contacts');
+const { simpanData, listContact, cariData, hapusDataContact } = require('./contacts');
 // yargs.command(
 //   'add',
 //   'Menambahkan Contact Baru',
@@ -31,29 +30,69 @@ const { simpanData } = require('./contacts');
 //   }
 // );
 
+yargs
+  .command({
+    command: 'add',
+    describe: 'Menambahkan Contact Baru',
+    builder: {
+      // Untuk membuat perintah --(sesuai properti yang kita buat)
+      nama: {
+        describe: 'Nama Lengkap',
+        demandOption: true, // Agar wajib di isi
+        type: 'string',
+      },
+      email: {
+        describe: 'Email',
+        demandOption: false,
+        type: 'string',
+      },
+      noHp: {
+        describe: 'Nomer Handphone',
+        demandOption: true,
+        type: 'string',
+      },
+    },
+    handler(argv) {
+      simpanData(argv.nama, argv.email, argv.noHp);
+    },
+  })
+  .demandCommand(); //Untuk warning
+
+// Menampilkan daftar semua nama contact
 yargs.command({
-  command: 'add',
-  describe: 'Menambahkan Contact Baru',
+  command: 'list',
+  describe: 'Menampilkan semua list nama & nomer Hp',
+  handler() {
+    listContact();
+  },
+});
+
+yargs.command({
+  command: 'details',
+  describe: 'Manampilkan detail sebuah contact berdasarkan nama',
   builder: {
-    // Untuk membuat perintah --(sesuai properti yang kita buat)
     nama: {
-      describe: 'Nama Lengkap',
-      demandOption: true, // Agar wajib di isi
-      type: 'string',
-    },
-    email: {
-      describe: 'Email',
-      demandOption: false,
-      type: 'string',
-    },
-    noHp: {
-      describe: 'Nomer Handphone',
+      describe: 'Nama lengkap',
       demandOption: true,
       type: 'string',
     },
   },
   handler(argv) {
-    simpanData(argv.nama, argv.email, argv.noHp);
+    cariData(argv.nama);
+  },
+});
+yargs.command({
+  command: 'hapus',
+  describe: 'Menghapus data contact berdasarkan nama',
+  builder: {
+    nama: {
+      describe: 'Nama lengkap',
+      demandOption: true,
+      type: 'string',
+    },
+  },
+  handler(argv) {
+    hapusDataContact(argv.nama);
   },
 });
 

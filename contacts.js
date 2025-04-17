@@ -16,10 +16,16 @@ if (!fs.existsSync(filePath)) {
   console.log('File Path Berhasil Dibuat');
 }
 
-const simpanData = (nama, email, nomerHp) => {
-  const contact = { nama, email, nomerHp };
+const loadContact = function () {
   const fileBuffer = fs.readFileSync('./data/contacts.json', 'utf-8');
   const data = JSON.parse(fileBuffer);
+  return data;
+};
+
+const simpanData = (nama, email, nomerHp) => {
+  const contact = { nama, email, nomerHp };
+
+  const data = loadContact();
 
   //Cek terlebih dahulu
   const duplikat = data.find((element) => element.nama === nama);
@@ -39,15 +45,55 @@ const simpanData = (nama, email, nomerHp) => {
   }
 
   // Cek Nomer HP
-  const nomer = validator.isMobilePhone(nomerHp, ['id-ID']);
+  const nomer = validator.isMobilePhone(nomerHp, 'id-ID');
   if (!nomer) {
-    return console.log(chalk.red.inverse.bold('Format Nomer Salah'));
+    return console.log(chalk.red.inverse.bold('Nomor Hp Tidak Valid!'));
   }
 
   data.push(contact);
 
   fs.writeFileSync('./data/contacts.json', JSON.stringify(data, '', 2));
-  console.log(chalk.green.bold('Contact Berhasil di simpan'));
+  console.log(chalk.green.inverse.bold('Contact Berhasil di simpan'));
 };
 
-module.exports = { simpanData };
+const listContact = function () {
+  const contacts = loadContact();
+  console.log(chalk.green.inverse.bold('Daftar Kontak: '));
+  contacts.forEach((element, i) => {
+    console.log(`${i + 1}. ${element.nama} - ${element.nomerHp}`);
+  });
+};
+
+const cariData = function (nama) {
+  const contacts = loadContact();
+  const result = contacts.find((element) => {
+    // element.nama == nama;
+    return element.nama.toLowerCase() === nama.toLowerCase();
+  });
+  if (!result) {
+    console.log(chalk.red.inverse.bold(`${nama} Data tidak ditemukan`));
+  } else {
+    console.log(chalk.green.inverse.bold(result.nama));
+    console.log(result.nomerHp);
+    if (result.email) {
+      console.log(result.email);
+    }
+  }
+};
+
+const hapusDataContact = function (nama) {
+  const contacts = loadContact();
+  const newContacts = contacts.filter((element) => {
+    // element.nama == nama;
+    return element.nama.toLowerCase() !== nama.toLowerCase();
+  });
+
+  if (contacts.length === newContacts.length) {
+    console.log(chalk.red.inverse.bold(`${nama} Data tidak ada`));
+  } else {
+    fs.writeFileSync('./data/contacts.json', JSON.stringify(newContacts, '', 2));
+    console.log(chalk.green.inverse.bold('Contact Berhasil di Hapus'));
+  }
+};
+
+module.exports = { simpanData, listContact, cariData, hapusDataContact };
